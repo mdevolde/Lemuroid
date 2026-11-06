@@ -10,6 +10,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
@@ -19,9 +20,11 @@ import com.alorma.compose.settings.storage.memory.rememberMemoryIntSettingState
 import com.swordfish.lemuroid.R
 import com.swordfish.lemuroid.app.mobile.feature.gamemenu.tilt.TiltConfigurationMenuEntry
 import com.swordfish.lemuroid.app.shared.GameMenuContract
+import com.swordfish.lemuroid.app.shared.game.FastForwardSpeeds
 import com.swordfish.lemuroid.app.utils.android.settings.LemuroidSettingsList
 import com.swordfish.lemuroid.app.utils.android.settings.LemuroidSettingsMenuLink
 import com.swordfish.lemuroid.app.utils.android.settings.LemuroidSettingsSwitch
+import com.swordfish.lemuroid.lib.preferences.SharedPreferencesHelper
 import kotlin.reflect.KFunction1
 
 @Composable
@@ -96,39 +99,37 @@ fun GameMenuHomeScreen(
         )
 
         if (gameMenuRequest.fastForwardSupported) {
-            val speedLabels = stringArrayResource(R.array.game_menu_fast_forward_speeds).toList()
+            val preferences = SharedPreferencesHelper.getSharedPreferences(LocalContext.current)
+            val preferredSpeed =
+                FastForwardSpeeds.preferred(
+                    preferences.getInt(FastForwardSpeeds.PREFERRED_SPEED_KEY, 2),
+                )
             val speedValues =
                 stringArrayResource(R.array.game_menu_fast_forward_speed_values)
-                    .map { it.toInt() }
+                    .map { it.toInt() }.filter { it > 1 }
+            val speedLabels = speedValues.map { "$it×" }
+            val selectedIndex = speedValues.indexOf(preferredSpeed)
 
-            val selectedIndex =
-                speedValues.indexOf(gameMenuRequest.frameSpeed).let { if (it >= 0) it else 0 }
-
-            LemuroidSettingsList(
-                title = { Text(text = stringResource(id = R.string.game_menu_fast_forward)) },
-                items = speedLabels,
-                useSelectedValueAsSubtitle = false,
-                subtitle = {
-                    Text(
-                        text =
-                            speedLabels[selectedIndex] +
-                                " - " +
-                                stringResource(R.string.game_menu_fast_forward_note),
-                    )
-                },
+            LemuroidSettingsSwitch(
+                title = { Text(text = stringResource(R.string.game_menu_fast_forward)) },
+                subtitle = { Text(text = "$preferredSpeed×") },
                 icon = {
                     Icon(
                         painterResource(R.drawable.ic_menu_fast_forward),
-                        contentDescription = stringResource(id = R.string.game_menu_fast_forward),
+                        contentDescription = null,
                     )
                 },
+                state = rememberMemoryBooleanSettingState(gameMenuRequest.fastForwardEnabled),
+                onCheckedChange = {
+                    onResult { putExtra(GameMenuContract.RESULT_ENABLE_FAST_FORWARD, it) }
+                },
+            )
+            LemuroidSettingsList(
+                title = { Text(text = stringResource(R.string.game_menu_fast_forward_speed)) },
+                items = speedLabels,
                 state = rememberMemoryIntSettingState(selectedIndex),
                 onItemSelected = { index, _ ->
-                    val speed = speedValues[index]
-                    onResult {
-                        putExtra(GameMenuContract.RESULT_SET_FRAME_SPEED, speed)
-                        putExtra(GameMenuContract.RESULT_ENABLE_FAST_FORWARD, speed > 1)
-                    }
+                    onResult { putExtra(GameMenuContract.RESULT_SET_PREFERRED_FRAME_SPEED, speedValues[index]) }
                 },
             )
         }

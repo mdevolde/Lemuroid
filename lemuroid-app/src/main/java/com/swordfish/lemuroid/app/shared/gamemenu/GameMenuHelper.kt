@@ -11,10 +11,12 @@ import androidx.preference.PreferenceScreen
 import androidx.preference.SwitchPreference
 import com.swordfish.lemuroid.R
 import com.swordfish.lemuroid.app.shared.GameMenuContract
+import com.swordfish.lemuroid.app.shared.game.FastForwardSpeeds
 import com.swordfish.lemuroid.common.graphics.GraphicsUtils
 import com.swordfish.lemuroid.lib.library.CoreID
 import com.swordfish.lemuroid.lib.library.SystemCoreConfig
 import com.swordfish.lemuroid.lib.library.db.entity.Game
+import com.swordfish.lemuroid.lib.preferences.SharedPreferencesHelper
 import com.swordfish.lemuroid.lib.saves.SaveInfo
 import com.swordfish.lemuroid.lib.saves.StatesPreviewManager
 import java.text.SimpleDateFormat
@@ -32,34 +34,33 @@ object GameMenuHelper {
     fun setupFastForwardOption(
         activity: Activity?,
         screen: PreferenceScreen,
-        frameSpeed: Int,
+        fastForwardEnabled: Boolean,
         fastForwardSupported: Boolean,
     ) {
-        val preference = screen.findPreference<ListPreference>(FAST_FORWARD)
+        val preferences = SharedPreferencesHelper.getSharedPreferences(screen.context)
+        val preferredSpeed = FastForwardSpeeds.preferred(preferences.getInt(FastForwardSpeeds.PREFERRED_SPEED_KEY, 2))
+        val toggle = screen.findPreference<SwitchPreference>(FAST_FORWARD)
+        toggle?.isVisible = fastForwardSupported
+        toggle?.isChecked = fastForwardEnabled
+        toggle?.summary = "$preferredSpeed×"
+        toggle?.setOnPreferenceChangeListener { _, value ->
+            setResultAndFinish(
+                activity,
+                Intent().putExtra(GameMenuContract.RESULT_ENABLE_FAST_FORWARD, value as Boolean),
+            )
+            true
+        }
+
+        val preference = screen.findPreference<ListPreference>("pref_game_fast_forward_speed")
         preference?.isVisible = fastForwardSupported
-
-        val speedLabels = screen.context.resources.getStringArray(R.array.game_menu_fast_forward_speeds)
-        val speedValues = screen.context.resources.getStringArray(R.array.game_menu_fast_forward_speed_values)
-
-        preference?.entries = speedLabels
-        preference?.entryValues = speedValues
-
-        val selectedIndex =
-            speedValues.indexOf(frameSpeed.toString()).let { if (it >= 0) it else 0 }
-
-        preference?.setValueIndex(selectedIndex)
-        preference?.summary =
-            (speedLabels.getOrNull(selectedIndex) ?: "") +
-                " - " +
-                screen.context.getString(R.string.game_menu_fast_forward_note)
+        val values = FastForwardSpeeds.supported.filter { it > 1 }
+        preference?.entries = values.map { "$it×" }.toTypedArray()
+        preference?.entryValues = values.map { it.toString() }.toTypedArray()
+        preference?.value = preferredSpeed.toString()
+        preference?.summary = "$preferredSpeed×"
         preference?.setOnPreferenceChangeListener { _, newValue ->
-            val speed = (newValue as? String)?.toIntOrNull() ?: 1
-            val resultIntent =
-                Intent().apply {
-                    putExtra(GameMenuContract.RESULT_SET_FRAME_SPEED, speed)
-                    putExtra(GameMenuContract.RESULT_ENABLE_FAST_FORWARD, speed > 1)
-                }
-            setResultAndFinish(activity, resultIntent)
+            val speed = FastForwardSpeeds.preferred((newValue as? String)?.toIntOrNull() ?: 2)
+            setResultAndFinish(activity, Intent().putExtra(GameMenuContract.RESULT_SET_PREFERRED_FRAME_SPEED, speed))
             true
         }
     }

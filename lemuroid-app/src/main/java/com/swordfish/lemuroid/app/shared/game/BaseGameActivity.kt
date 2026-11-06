@@ -214,7 +214,7 @@ abstract class BaseGameActivity : ImmersiveActivity() {
                 this.putExtra(GameMenuContract.EXTRA_FRAME_SPEED, currentFrameSpeed)
                 this.putExtra(
                     GameMenuContract.EXTRA_FAST_FORWARD,
-                    currentFrameSpeed > 1,
+                    baseGameScreenViewModel.fastForwardState.value.enabled,
                 )
                 this.putExtra(GameMenuContract.EXTRA_CURRENT_TILT_CONFIG, currentTiltConfiguration)
                 // TODO PADS... Make sure to avoid passing this if a physical pad is connected.
@@ -398,26 +398,15 @@ abstract class BaseGameActivity : ImmersiveActivity() {
                         )
                 }
             }
-            val hasFrameSpeed = data?.hasExtra(GameMenuContract.RESULT_SET_FRAME_SPEED) == true
-            if (hasFrameSpeed) {
-                baseGameScreenViewModel.retroGameView.retroGameView?.apply {
-                    val frameSpeed =
-                        data.getIntExtra(
-                            GameMenuContract.RESULT_SET_FRAME_SPEED,
-                            1,
-                        )
-                    this.frameSpeed = frameSpeed
-                }
-            }
-            if (!hasFrameSpeed && data?.hasExtra(GameMenuContract.RESULT_ENABLE_FAST_FORWARD) == true) {
-                baseGameScreenViewModel.retroGameView.retroGameView?.apply {
-                    val fastForwardEnabled =
-                        data.getBooleanExtra(
-                            GameMenuContract.RESULT_ENABLE_FAST_FORWARD,
-                            false,
-                        )
-                    this.frameSpeed = if (fastForwardEnabled) 2 else 1
-                }
+            if (data?.hasExtra(GameMenuContract.RESULT_SET_PREFERRED_FRAME_SPEED) == true) {
+                baseGameScreenViewModel.setPreferredFrameSpeed(
+                    data.getIntExtra(GameMenuContract.RESULT_SET_PREFERRED_FRAME_SPEED, 2),
+                )
+            } else if (data?.hasExtra(GameMenuContract.RESULT_SET_FRAME_SPEED) == true) {
+                baseGameScreenViewModel.setFrameSpeed(data.getIntExtra(GameMenuContract.RESULT_SET_FRAME_SPEED, 1))
+            } else if (data?.hasExtra(GameMenuContract.RESULT_ENABLE_FAST_FORWARD) == true) {
+                val enabled = data.getBooleanExtra(GameMenuContract.RESULT_ENABLE_FAST_FORWARD, false)
+                baseGameScreenViewModel.setFastForwardEnabled(enabled)
             }
             if (data?.getBooleanExtra(GameMenuContract.RESULT_EDIT_TOUCH_CONTROLS, false) == true) {
                 baseGameScreenViewModel.showEditControls(true)

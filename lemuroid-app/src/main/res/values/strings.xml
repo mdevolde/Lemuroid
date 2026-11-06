@@ -240,4 +240,8 @@
     <string name="tilt_configuration_buttons_l1_r1">L1 - R1</string>
     <string name="tilt_configuration_buttons_l2_r2">L2 - R2</string>
 
+    <string name="game_menu_fast_forward_speed">Fast-forward speed</string>
+    <string name="game_fast_forward_indicator">Fast forward: %1$d×</string>
+    <string name="game_fast_forward_stop">Stop fast forward</string>
+    <string name="game_fast_forward_resume">Resume fast forward</string>
 </resources>

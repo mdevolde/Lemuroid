@@ -28,10 +28,16 @@
         android:title="@string/game_menu_mute_audio"
         app:icon="@drawable/ic_menu_mute"/>
 
-    <ListPreference
+    <SwitchPreference
+        android:persistent="false"
         android:key="pref_game_fast_forward"
         android:title="@string/game_menu_fast_forward"
         app:icon="@drawable/ic_menu_fast_forward"/>
+
+    <ListPreference
+        android:persistent="false"
+        android:key="pref_game_fast_forward_speed"
+        android:title="@string/game_menu_fast_forward_speed"/>
 
     <ListPreference
         android:key="pref_game_section_change_disk"

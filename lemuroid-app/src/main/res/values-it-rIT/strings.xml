@@ -184,4 +184,8 @@
     <string name="tilt_configuration_buttons_l_r">L - R</string>
     <string name="tilt_configuration_buttons_l1_r1">L1 - R1</string>
     <string name="tilt_configuration_buttons_l2_r2">L2 - R2</string>
+    <string name="game_menu_fast_forward_speed">Velocità avanzamento rapido</string>
+    <string name="game_fast_forward_indicator">Avanzamento rapido: %1$d×</string>
+    <string name="game_fast_forward_stop">Disattiva avanzamento rapido</string>
+    <string name="game_fast_forward_resume">Riattiva avanzamento rapido</string>
 </resources>

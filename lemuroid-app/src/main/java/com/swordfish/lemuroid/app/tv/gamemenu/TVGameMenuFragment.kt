@@ -30,7 +30,7 @@ class TVGameMenuFragment(
     private val numDisks: Int,
     private val currentDisk: Int,
     private val audioEnabled: Boolean,
-    private val frameSpeed: Int,
+    private val fastForwardEnabled: Boolean,
     private val fastForwardSupported: Boolean,
 ) : LeanbackPreferenceFragmentCompat() {
     override fun onCreatePreferences(
@@ -49,7 +49,7 @@ class TVGameMenuFragment(
         super.onViewCreated(view, savedInstanceState)
 
         GameMenuHelper.setupAudioOption(preferenceScreen, audioEnabled)
-        GameMenuHelper.setupFastForwardOption(activity, preferenceScreen, frameSpeed, fastForwardSupported)
+        GameMenuHelper.setupFastForwardOption(activity, preferenceScreen, fastForwardEnabled, fastForwardSupported)
         GameMenuHelper.setupSaveOption(preferenceScreen, systemCoreConfig)
 
         if (numDisks > 1) {

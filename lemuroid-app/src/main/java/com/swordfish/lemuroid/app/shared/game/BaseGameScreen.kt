@@ -31,7 +31,18 @@ fun BaseGameScreen(
             gameState is GameViewModelRetroGameView.GameState.Ready
 
     if (isGameReady) {
-        gameScreen(viewModel)
+        Box(modifier = Modifier.fillMaxSize()) {
+            gameScreen(viewModel)
+            val fastForward = viewModel.fastForwardState.collectAsState().value
+            val loading = viewModel.loadingState.collectAsState().value
+            if (fastForward.enabled && !loading) {
+                FastForwardIndicator(
+                    speed = fastForward.frameSpeed,
+                    onToggle = viewModel::toggleFastForwardFromIndicator,
+                    modifier = Modifier.align(Alignment.TopEnd),
+                )
+            }
+        }
     } else {
         Box(
             modifier = Modifier.fillMaxSize(),
